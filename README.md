@@ -34,3 +34,4 @@ application.
 If memory is allocated with mem_alloc () or mem_realloc (), then it cannot be
 move somewhere before calling mem_free () or mem_realloc (), if mem_realloc ()
 returned a different address.
+# EXAMPLES OF USAGE
