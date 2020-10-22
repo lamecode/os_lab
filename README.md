@@ -40,7 +40,7 @@ returned a different address.
 ![create block](img1.PNG "create block")
 
 #### 	mem_realloc(x, 10);
-![change block size](img2.png "change block size")
+![change block size](img2.PNG "change block size")
 
 ####  mem_free(x);
-![free memory](img4.png "free memory")
+![free memory](img4.PNG "free memory")
