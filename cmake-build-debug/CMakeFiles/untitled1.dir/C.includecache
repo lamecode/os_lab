@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/Olya/CLionProjects/untitled1/main.c
+stdio.h
+-
+stdbool.h
+-
+stdint.h
+-
+malloc.h
+-
+assert.h
+-
+
