@@ -37,8 +37,10 @@ returned a different address.
 ### EXAMPLES OF USAGE
 
 #### 	void* x = mem_alloc(20);
-
+![create block](img2.png "create block")
 
 #### 	mem_realloc(x, 10);
+![change block size](img3.png "change block size")
 
 ####  mem_free(x);
+![free memory](img3.png "free memory")
