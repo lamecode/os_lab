@@ -1,20 +1,12 @@
-#include <stdio.h>;
-#include <stdbool.h>;
+#include <stdio.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <malloc.h>
 #include <assert.h>
 
-#define BUFFER_SIZE 1024
+#include "block.h"
 
-static char memory[BUFFER_SIZE];
 static void* PTR;
-static size_t SIZE = 800;
-#pragma pack(push, 1)
-typedef struct Block {
-	bool status;
-	size_t previous_size;
-	size_t size;
-} Block_t;
 
 static int SIZE_H = sizeof(Block_t);
 
@@ -43,7 +35,7 @@ size_t get_size(void* pointer) {
 }
 
 void* get_next(void* pointer) {
-	if ((uint8_t*)pointer + get_size(pointer) + SIZE_H == (uint8_t*)PTR + SIZE + SIZE_H) {
+	if ((uint8_t*)pointer + get_size(pointer) + SIZE_H == (uint8_t*)PTR + BUFFER_SIZE + SIZE_H) {
 		return NULL;
 	}
 	return (uint8_t*)pointer + get_size(pointer) + SIZE_H;
@@ -67,19 +59,19 @@ void new_block(void* pointer, bool status, size_t previous_size, size_t size)
 void combine_blocks(void* pointer1, void* pointer2) {
 	assert(get_status(pointer1) == 0 && get_status(pointer2) == 0);
 	set_size(pointer1, get_size(pointer1) + get_size(pointer2) + SIZE_H);
-	if (get_next(pointer2) != NULL)
-	{
+	if (get_next(pointer2) != NULL) {
 		set_previous_size(get_next(pointer2), get_size(pointer1));
 	}
 }
 
 void* block(size_t size) {
 
-	void* pointer = memory + sizeof(Block_t);
+	void* pointer = malloc(size);
     new_block(pointer, false, 0, size);
 
 	return pointer;
 }
+
 void* get_first(size_t size) {
 	void* pointer = PTR;
 	void* first = NULL;
@@ -103,7 +95,8 @@ void* mem_alloc(size_t size) {
 	}
 
 	if (get_size(pointer) > size + SIZE_H) {
-        new_block((uint8_t *) pointer + size + SIZE_H, 0, size, get_size(pointer) - size - SIZE_H);
+        new_block((uint8_t *) pointer + size + SIZE_H, 0, size,
+                  get_size(pointer) - size - SIZE_H);
 		set_size(pointer, size);
 	}
 	set_status(pointer, true);
@@ -120,6 +113,7 @@ void mem_free(void* pointer) {
         combine_blocks(get_previous(pointer), pointer);
 	}
 }
+
 void* mem_realloc(void* pointer, size_t size) {
 	pointer = (uint8_t*)pointer - SIZE_H;
 	if (size % 4 != 0) {
@@ -130,22 +124,20 @@ void* mem_realloc(void* pointer, size_t size) {
 	}
 	if (get_size(pointer) > size) {
 		if (get_size(pointer) - size - SIZE_H >= 0) {
-            new_block((uint8_t *) pointer + size + SIZE_H, false, size, get_size(pointer) - size -
-                                                                        SIZE_H);
+            new_block((uint8_t *) pointer + size + SIZE_H, false,
+                      size, get_size(pointer) - size - SIZE_H);
 			set_size(pointer, size);
 			if (get_next(get_next(pointer)) != NULL &&
-				get_status(get_next(get_next(pointer))) == 0)
-			{
+				get_status(get_next(get_next(pointer))) == 0) {
                 combine_blocks(get_next(pointer), get_next(get_next(pointer)));
 			}
 		}
 		return pointer;
-
 	}
 	if (get_next(pointer) != NULL && get_size(pointer) + get_size(get_next(pointer))
 		>= size) {
-        new_block((uint8_t *) pointer + size + SIZE_H, false, size, get_size(get_next(pointer)) -
-                                                                    (size - get_size(pointer)));
+        new_block((uint8_t *) pointer + size + SIZE_H, false, size,
+                  get_size(get_next(pointer)) - (size - get_size(pointer)));
 		set_size(pointer, size);
 		return pointer;
 	}
@@ -180,7 +172,7 @@ void mem_dump() {
 }
 
 int main() {
-	PTR = block(SIZE);
+	PTR = block(BUFFER_SIZE);
 	mem_dump();
 	void* x1 = mem_alloc(20);
 	mem_dump();
@@ -199,9 +191,7 @@ int main() {
 	mem_dump();
 	void* x5 = mem_alloc(20);
 	void* x6 = mem_alloc(20);
-	void* x7 = mem_alloc(70);
 	mem_dump();
-
 	x1 = mem_realloc(x1, 30);
 	mem_dump();
 	return 0;
